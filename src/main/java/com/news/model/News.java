@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -53,5 +54,5 @@ public class News extends BaseEntity {
             joinColumns = { @JoinColumn(name = "news_id") },
             inverseJoinColumns = { @JoinColumn(name = "tag_id") }
     )
-    private Set<Tag> tags = new HashSet<>();
+    private List<Tag> tags;
 }

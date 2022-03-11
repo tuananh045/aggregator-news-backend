@@ -1,9 +1,8 @@
 package com.news.repository;
 
+import com.news.model.Source;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import javax.xml.transform.Source;
 
 @Repository
 public interface NewsSourceRepository extends JpaRepository<Source, Long>{

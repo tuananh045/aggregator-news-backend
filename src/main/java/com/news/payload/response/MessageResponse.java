@@ -5,11 +5,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class MessageResponse {
 
-    private String status;
     private String message;
+    private String status;
+
+    public MessageResponse(String message) {
+        this.message = message;
+    }
+
+    public MessageResponse(String status , String message) {
+        this.message = message;
+        this.status = status;
+    }
 
 }
