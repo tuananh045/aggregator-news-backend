@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "tbl_role")
 public class Role extends BaseEntity {
@@ -21,5 +19,14 @@ public class Role extends BaseEntity {
 
     @ManyToMany(mappedBy = "roles")
     private List<User> users = new ArrayList<>();
+
+    public Role() {
+
+    }
+
+    public Role(ERole name) {
+        this.name = name;
+    }
+
 
 }

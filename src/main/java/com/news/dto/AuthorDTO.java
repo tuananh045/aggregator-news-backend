@@ -7,12 +7,18 @@ import java.util.Date;
 import com.news.model.Author;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+
 
 @Data
 public class AuthorDTO extends AbstractDTO<AuthorDTO>{
 
+    @NotBlank
     private String name;
+
+    @NotBlank
     private String slug;
+
     private Integer display;
     private String createdDate;
     private String updatedDate;
