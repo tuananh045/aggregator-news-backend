@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class SearchDTO extends AbstractDTO<SearchDTO> {
+
     private int pageIndex;
     private int pageSize;
     private String keyword;

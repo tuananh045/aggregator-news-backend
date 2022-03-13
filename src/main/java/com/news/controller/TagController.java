@@ -24,9 +24,11 @@ public class TagController {
     private TagsRepository tagRepository;
 
     @GetMapping("")
-    public ResponseEntity<Page<TagDTO>> getAllNewsTag(@RequestParam(name="page",defaultValue = "0") Integer page ,
-                                                      @RequestParam(name="limit",defaultValue = "24") Integer limit,
-                                                      @RequestParam(name = "sortBy", defaultValue = "createdDate") String sortBy){
+    public ResponseEntity<Page<TagDTO>> getAllNewsTag(
+            @RequestParam(name="page",defaultValue = "0") Integer page ,
+            @RequestParam(name="limit",defaultValue = "24") Integer limit,
+            @RequestParam(name = "sortBy", defaultValue = "createdDate") String sortBy
+    ){
         Page<Tag> list = tagRepository.getList(PageRequest.of(page, limit, Sort.by(sortBy).descending()));
         Page<TagDTO> tagDTO = list.map(tag -> new TagDTO(tag));
 
@@ -45,7 +47,6 @@ public class TagController {
         Tag entity = null;
         if (dto.getId() != null) {
             entity = tagRepository.getById(dto.getId());
-            entity.setUpdatedDate(new Timestamp(new Date().getTime()).toString());
         }
         if (entity == null) {
             entity = new Tag();
@@ -54,6 +55,7 @@ public class TagController {
 
         entity.setName(dto.getName());
         entity.setSlug(Slug.makeCode(dto.getName()));
+        entity.setCreatedDate(new Timestamp(new Date().getTime()).toString());
         entity = tagRepository.save(entity);
 
 
@@ -80,7 +82,7 @@ public class TagController {
         entity = tagRepository.save(entity);
 
 
-        return new ResponseEntity<MessageResponse>(new MessageResponse("SUCCESS", "Thêm tag thành công!"),
+        return new ResponseEntity<MessageResponse>(new MessageResponse("SUCCESS", "Update tag thành công!"),
                 HttpStatus.OK);
     }
 

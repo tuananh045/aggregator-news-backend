@@ -72,7 +72,7 @@ public class NewsDTO extends AbstractDTO<NewsDTO>{
         }
 
         try {
-            this.createdDate = new SimpleDateFormat("dd/MM/yyyy   hh:mm").format(
+            this.createdDate = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(
                     new Date(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS").parse(entity.getCreatedDate()).getTime()));
         } catch (ParseException e) {
             e.printStackTrace();

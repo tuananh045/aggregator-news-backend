@@ -1,42 +1,50 @@
-package com.news.service;
+package com.news.controller;
 
-import com.news.constant.*;
-import com.news.payload.response.NewsCrawlDetail;
-import com.news.repository.NewsSourceRepository;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.news.payload.response.MessageResponse;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Service
-public class CrawlService implements Serializable {
-    private static final long serialVersionUID = 1L;
+import com.news.constant.*;
+import com.news.payload.response.NewsCrawlDetail;
+import com.news.repository.NewsSourceRepository;
+
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RestController
+@RequestMapping(value = "/api/crawl")
+public class CrawlController {
 
     @Autowired
-    private NewsSourceRepository newsSourceRepository;
+    private NewsSourceRepository newSourceRepos;
 
-    public NewsCrawlDetail getData(String source , String url) throws IOException {
+    @GetMapping(value = "")
+    public ResponseEntity<Object> getData(@RequestParam(name = "source") String source,
+                                          @RequestParam(name = "url") String url) throws IOException {
         JSONObject response = new JSONObject();
-        Document doc = Jsoup.connect(url).timeout(6000).get();
-
+        Document doc = Jsoup.connect(url).timeout(60000).get();
         String responseTitle = "";
         String responseShortDesc = "";
         String responseAuthor = "";
-        String responseContent = "";
         List<String> responseTags = new ArrayList<>();
+        String responseContent = "";
 
         Elements body, contentElement, paragrapths = null;
         String content = "";
         String title, short_description, author;
-        String[] parts;
         List<String> tags = new ArrayList<>();
         switch (source) {
             case "thanh-nien":
@@ -46,15 +54,14 @@ public class CrawlService implements Serializable {
                 title = body.select(ThanhnienConstant.TITLE_THANHNIEN).text();
                 short_description = body.select(ThanhnienConstant.SHORT_DESCRIPTION_THANHNIEN).text();
                 author = body.select(ThanhnienConstant.AUTHOR_THANHNIEN).text();
-
                 contentElement = body.select(ThanhnienConstant.CONTENT_THANHNIEN);
                 contentElement.select("#adsWeb_AdsArticleMiddle").remove();
                 contentElement.select("table.video").remove();
                 contentElement.select("table").removeAttr("align");
                 contentElement.select("table").attr("class", "image-container");
                 contentElement.select(".cms-note.notebox.ncenter").remove();
-                paragrapths = contentElement.select("p");
 
+                paragrapths = contentElement.select("p");
                 for (Element e : paragrapths) {
                     Elements aTag = e.select("a");
                     aTag.attr("target", "_blank");
@@ -67,7 +74,6 @@ public class CrawlService implements Serializable {
                 images.removeAttr("data-image-id");
                 images.removeAttr("data-width");
                 images.removeAttr("data-height");
-
                 for (int i = 1; i < images.size(); i++) {
                     images.get(i).attr("src", images.get(i).getElementsByTag("img").attr("data-src"));
                 }
@@ -81,80 +87,13 @@ public class CrawlService implements Serializable {
                 }
                 responseTitle += title;
                 responseShortDesc += short_description;
-                parts = author.split("[\\(\\)]");
-                responseAuthor += parts[0].trim();
+                responseAuthor += author;
                 responseContent += content;
                 for (String e : tags) {
                     responseTags.add(e);
                 }
                 break;
-
-            case "vnexpress":
-                body = doc.select(VnexpressConstant.BODY_VNEXPRESS);
-                title = body.select(VnexpressConstant.TITLE_VNEXPRESS).text();
-                short_description = body.select(VnexpressConstant.SHORT_DESCRIPTION_VNEXPRESS).text();
-                author = body.select(VnexpressConstant.AUTHOR_VNEXPRESS).last().text();
-                body.select(VnexpressConstant.CONTENT_VNEXPRESS).select(".list-news").remove();
-
-                contentElement = body.select(VnexpressConstant.CONTENT_VNEXPRESS);
-                contentElement.select(".list_link").remove();
-
-                paragrapths = contentElement.select("p");
-                paragrapths.forEach(p -> {
-                    p.removeAttr("class");
-                });
-
-                for (Element e : paragrapths) {
-                    Elements aTag = e.select("a");
-                    aTag.attr("target", "_blank");
-                }
-
-                Elements figures = contentElement.select("figure");
-
-                for (Element figure : figures) {
-                    Elements imagesVnExpress = figure.select("img");
-                    Elements figcaptions = figure.select("figcaption");
-                    figures.attr("class", "image-container");
-                    figures.removeAttr("data-size");
-                    figures.removeAttr("itemprop");
-                    figures.removeAttr("itemscope");
-                    figures.removeAttr("itemtype");
-                    figures.select("meta").remove();
-                    figures.select("figcaption").removeAttr("itemprop");
-                    for (Element image : imagesVnExpress) {
-                        image.removeAttr("itemprop");
-                        image.removeAttr("intrinsicsize");
-                        image.removeAttr("itemprop");
-                        image.removeAttr("style");
-                        image.attr("src", image.getElementsByTag("img").attr("data-src"));
-                    }
-                    figure.html(imagesVnExpress.toString() + figcaptions.toString());
-                }
-                contentElement.select("p").last().remove();
-
-                tags = new ArrayList<>();
-                Elements metaTags = doc.select("meta[name=its_tag]");
-
-                for (Element e : metaTags) {
-                    String [] metaTagsSplit = e.attr("content").split(",");
-                    for(int i = 0; i< metaTagsSplit.length; i++) {
-                        tags.add(metaTagsSplit[i].trim());
-                    }
-                }
-                for (Element e : contentElement) {
-                    content += e.html();
-                }
-                responseTitle += title;
-                responseShortDesc += short_description;
-                parts = author.split("[\\(\\)]");
-                responseAuthor += parts[0].trim();
-                responseContent += content;
-                for (String e : tags) {
-                    responseTags.add(e);
-                }
-                break;
-
-            case "tuoi-tre" :
+            case "tuoi-tre":
                 body = doc.select(TuoitreConstant.BODY_TUOITRE);
                 title = body.select(TuoitreConstant.TITLE_TUOITRE).text();
                 short_description = body.select(TuoitreConstant.SHORT_DESCRIPTION_TUOITRE).text();
@@ -192,14 +131,12 @@ public class CrawlService implements Serializable {
                 }
                 responseTitle += title;
                 responseShortDesc += short_description;
-                parts = author.split("[\\(\\)]");
-                responseAuthor += parts[0].trim();
+                responseAuthor += author;
                 responseContent += content;
                 for (String e : tags) {
                     responseTags.add(e);
                 }
                 break;
-
             case "vietnamnet":
                 body = doc.select(VietnamnetConstant.BODY_VIETNAMNET);
                 title = body.select(VietnamnetConstant.TITLE_VIETNAMNET).text();
@@ -228,30 +165,29 @@ public class CrawlService implements Serializable {
                 }
                 responseTitle += title;
                 responseShortDesc += short_description;
-                parts = author.split("[\\(\\)]");
-                responseAuthor += parts[0].trim();
+                responseAuthor += author;
                 responseContent += content;
                 for (String e : tags) {
                     responseTags.add(e);
                 }
                 break;
-
             default:
                 break;
-
         }
-
         response.put("title", responseTitle);
         response.put("short_description", responseShortDesc);
         response.put("author", responseAuthor);
         response.put("content", responseContent);
         response.put("tags", responseTags);
 
-        if (newsSourceRepository.findOneBySlug(source) == null) {
-            return null;
+        if (newSourceRepos.findOneBySlug(source) != null) {
+            return new ResponseEntity<Object>(response.toMap(), HttpStatus.OK);
         } else {
-            return new NewsCrawlDetail(responseTitle, responseContent, responseShortDesc, responseAuthor, responseTags);
+            return new ResponseEntity<Object>(
+                    new MessageResponse("400", source + " hiện tại chưa được hỗ trợ, vui lòng sử dụng nguồn báo khác!"),
+                    HttpStatus.OK);
         }
 
     }
+
 }
