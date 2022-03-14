@@ -36,9 +36,11 @@ public class AuthorController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<AuthorDTO>> getAll(@RequestParam(name = "page", defaultValue = "0") Integer page,
-                                                  @RequestParam(name = "limit", defaultValue = "24") Integer limit,
-                                                  @RequestParam(name = "sortBy", defaultValue = "createdDate") String sortBy) {
+    public ResponseEntity<Page<AuthorDTO>> getAll(
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "limit", defaultValue = "24") Integer limit,
+            @RequestParam(name = "sortBy", defaultValue = "createdDate") String sortBy
+    ) {
         Page<Author> list = authorRepository.findAll(PageRequest.of(page, limit, Sort.by(sortBy).descending()));
         Page<AuthorDTO> result = list.map(tag -> new AuthorDTO(tag));
         return new ResponseEntity<Page<AuthorDTO>>(result, HttpStatus.OK);
@@ -46,13 +48,6 @@ public class AuthorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AuthorDTO> getById(@PathVariable Long id) {
-        Author author = authorRepository.getById(id);
-        AuthorDTO result = new AuthorDTO(author);
-        return new ResponseEntity<AuthorDTO>(result, HttpStatus.OK);
-    }
-
-    @GetMapping("/{id}/detail")
-    public ResponseEntity<AuthorDTO> getByIdDetail(@PathVariable Long id) {
         Author author = authorRepository.getById(id);
         AuthorDTO result = new AuthorDTO(author);
         return new ResponseEntity<AuthorDTO>(result, HttpStatus.OK);

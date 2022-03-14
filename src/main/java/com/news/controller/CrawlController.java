@@ -32,8 +32,10 @@ public class CrawlController {
     private NewsSourceRepository newSourceRepos;
 
     @GetMapping(value = "")
-    public ResponseEntity<Object> getData(@RequestParam(name = "source") String source,
-                                          @RequestParam(name = "url") String url) throws IOException {
+    public ResponseEntity<Object> getData(
+            @RequestParam(name = "source") String source,
+            @RequestParam(name = "url") String url
+    ) throws IOException {
         JSONObject response = new JSONObject();
         Document doc = Jsoup.connect(url).timeout(60000).get();
         String responseTitle = "";
